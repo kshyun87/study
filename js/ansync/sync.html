@@ -84,10 +84,11 @@
               range: [olderTime, futureTime]
             }
           };
-
+      console.time("forShow");
       for (var i = 0; i < 31; i++) {
           showChart('g'+(i+1),update, minuteView);
       }
+      console.timeEnd("forShow");
     }, 1000);
 
   </script>

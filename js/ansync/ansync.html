@@ -84,7 +84,9 @@
               range: [olderTime, futureTime]
             }
           };
+
       // 동기와 다르게 비동기로 처리되는 부분.
+      console.time("forShow");
       for (var i = 0; i < 31; i++) {
         (function (i) { // 외부 for문의 i값을 전달하기 위한 방법.
           setTimeout(function () { // setTimeout()의 경우 비동기로 동작하는 방식이라 showChart()를 비동기로 수행하게 함.
@@ -92,6 +94,7 @@
           }, 10);
         }(i));
       }
+      console.timeEnd("forShow");
     }, 1000);
 
   </script>
