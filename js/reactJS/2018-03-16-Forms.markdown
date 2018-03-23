@@ -1,0 +1,182 @@
+# Forms
+HTML에서 사용하고 있는 form과 유사합니다.
+단 몇가지 차이점이 있는데요.
+form 엘리먼트가 기본적으로 어떤 내부 state를 가지기 때문입니다.
+
+
+일반적인 HTML 문법으로도 React에서는 동작합니다.
+그러나 대부분의 경우 양식(form) 제출을 처리하고 사용자가 양식에 입력한 데이터에 접근할 수 있는 JS(JavaScript) 함수를 가지는 것이 편리합니다.
+이런 방식을 우린 controlled component라고 합니다.
+
+## Controlled Components
+
+HTML에서 < input >, < textarea >, < select >같은 form 엘리먼트는 일반적으로 그들 자신의 state가지고 있고 당신의 입력의 기반하여 변경합니다.
+React에서는 변경 가능한 state는 일반적으로 컴포넌트의 state property를 가지고 있습니다. 그리고 변경은 setState()를 통해서만 할 수 있죠.
+
+
+우리는 React state는 "single source of truth"(진실의 단일 소스?)로 만들어서 두가지를 합칠 수 있습니다. 그런 다음 폼을 렌더링하는 React 컴포넌트는 이후 사용자 입력시 해당 폼에서 일어나는 일을 제어합니다. React에 의해서 입력 폼 엘리먼트의 값이 제어되는 경우 "controlled component"라고 합니다.
+
+예를 들어, 만약 폼을 제줄할 떄마다 name의 이력(log)를 남기고자하는 경우, 우리는 controlled 컴포넌트로 폼을 작성할 수 있습니다.
+
+```jsx
+class NameForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {value: ''};
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(event) {
+    this.setState({value: event.target.value});
+  }
+
+  handleSubmit(event) {
+    alert('A name was submitted: ' + this.state.value);
+    event.preventDefault();
+  }
+
+  render() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          Name:
+          <input type="text" value={this.state.value} onChange={this.handleChange} />
+        </label>
+        <input type="submit" value="Submit" />
+      </form>
+    );
+  }
+}
+```
+
+Value 어트리뷰트는 form 엘리먼트로부터 설정되기 때문에, 화면에 출력되는 value(값)은 항상 "this.state.value"가 되어 React state가 진실의 소스(source of truth)가 됩니다. React state를 변경하기 위한 키가 입력될때마다 handleChange가 수행되기 때문에, 출력되는 값은 사용자가 입력한 값으로 변경될 것입니다.
+
+controlled 컴포넌트에서 모든 state변화는 헨들러 함수(handler function)과 관련되어 있습니다. 쉽게 바꾸거나 사용자의 입력을 인증하게 만들어줍니다.
+만약에 입력을 모두 대문자로 바꾸고 싶다면 다음과 같이 코드를 수정하면 됩니다.
+```jsx
+handleChange(event) {
+  this.setState({value: event.target.value.toUpperCase()});
+}
+```
+value에 toUpperCase()만 추가했을 뿐인데 알아서 입력을 모두 대문자로 바꿔줍니다. 매우 쉽게 말이죠.
+
+## The textarea Tag
+
+HTML에서는 테그 안에 있는 내용이 값으로 정의되었습니다.
+
+React에서는 < textarea >도 value 어트리뷰트를 사용해서 정의합니다. 1줄짜리 입력을 만드는데 있어서 쉽게 작성될 수 있습니다.
+
+이전 코드에서 input 엘리먼트를 textarea로 바꾸면 된다.
+```jsx
+class EssayForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      value: 'Please write an essay about your favorite DOM element.'
+    };
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(event) {
+    this.setState({value: event.target.value});
+  }
+
+  handleSubmit(event) {
+    alert('An essay was submitted: ' + this.state.value);
+    event.preventDefault();
+  }
+
+  render() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          Essay:
+          <textarea value={this.state.value} onChange={this.handleChange} />
+        </label>
+        <input type="submit" value="Submit" />
+      </form>
+    );
+  }
+}
+```
+위 코드에서는 state의 value를 미리 지정해서 기본 값을 지정했고, render부분에서 일부 내용을 변경했습니다.
+
+constructor에서 미리 값을 지정하면 초기화할 떄부터 값이 지정되어 기본 값이 설정됩니다.
+
+
+## Select Tag
+아래는 html에서 사용하는 select 테그입니다.
+```html
+<select>
+  <option value="grapefruit">Grapefruit</option>
+  <option value="lime">Lime</option>
+  <option selected value="coconut">Coconut</option>
+  <option value="mango">Mango</option>
+</select>
+```
+코드를 보면 selected 어트리뷰트 때문에 coconut이 기본으로 선택되어 있습니다. React는 selected 어트리뷰트 대신에 select 테그에 value 어트리뷰트를 사용합니다. 이방식은 단지 select한곳에서 값을 바꾸면 되기에 편리함이 제공됩니다.
+위 html이라면 option의 어트리뷰트를 수정해야하기에 여러번 수정해야하죠.
+
+```jsx
+class FlavorForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {value: 'coconut'};
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(event) {
+    this.setState({value: event.target.value});
+  }
+
+  handleSubmit(event) {
+    alert('Your favorite flavor is: ' + this.state.value);
+    event.preventDefault();
+  }
+
+  render() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          Pick your favorite La Croix flavor:
+          <select value={this.state.value} onChange={this.handleChange}>
+            <option value="grapefruit">Grapefruit</option>
+            <option value="lime">Lime</option>
+            <option value="coconut">Coconut</option>
+            <option value="mango">Mango</option>
+          </select>
+        </label>
+        <input type="submit" value="Submit" />
+      </form>
+    );
+  }
+}
+```
+위 코드를 보면 select테그에 value라는 어트리뷰트를 선언하고 값으로 this.state.value를 주었습니다. 선택된 값을 바로 준다는 의미이겠죠.
+text input, textarea, select는 사용방법이 비슷합니다.
+이들은 모두 value라는 어트리뷰트를 사용해서 값을 전해받고 제어합니다.
+
+잠깐! 그럼 하나의 값만 사용해할까요? 여러개의 값을 줄때는 어떻게 해야하나요?
+multiple 어트리뷰트를 사용하면 됩니다. multiple 속성값이 true면 value로 배열을 전달할 수 있습니다.
+```jsx
+<select multiple={true} value={['b','c']}>
+</select>
+```
+
+![](assets/markdown-img-paste-20180316153533461.png)
+
+
+## file input Tag
+html에서 사용하던거랑 다를게 없습니다.
+```jsx
+<input type="file" />
+```
+똑같죠?
+자바스크립트 File API를 사용해서 업로드하게 되죠
+이 테그는 uncontrolled 컴포넌트입니다.

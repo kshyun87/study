@@ -1,0 +1,329 @@
+# Reducers
+
+## 리듀서(Reducer)?
+리듀서는 어플리케이션의 state를 어떻게 변화시킬지 action을 store로 보내는 응답을 정의한 것입니다.
+Action은 단지 일어나야하는 것에 사실을 묘사하고 변화는 묘사하지 않습니다.
+이것이 리듀서가 하는 역할 입니다.
+
+## Designing the State Shape
+리덕스(redux)는 애플리케이션의 모든 state는 하나의 객체(object)로 저장합니다.
+코드를 작성하기 전에 그 형태를 생각해보는 것이 좋을 것입니다.
+앱의 state를 대표할 수 있는 가장 작은 객체는 무엇일까요?
+
+
+
+
+액션(action)은 어떤 행위에 대한 내용이고
+리듀서는 그 행위를 store로 업데이트 하는 내용.
+업데이틀 위해서는 어떤 행위를 선택해서 업데이트할 것인지를 작성해야하는데
+이때 js문법의 switch또는 if의 조건을 이용해서 사용. 단 많은 조건인 경우 switch-case를 사용.
+
+
+## Handling Actions
+액션 다루기
+리듀서는 이전 state와 action을 가지고 다음 state를 반환하는 퓨어함수(pure Function)입니다.
+```jsx
+(previousState, action) => newState
+```
+위와 같은 것을 리듀서라고 하는데, 그 이유는 Array.prototype.reduce(reducer, ?initialValue)로 넘기는 함수 타입이기 때문입니다.
+이것이 리듀서가 퓨어할 수 있도록 해주는 중요한 점입니다.
+다음은 리듀서에서 절대 해서는 안되는 내용입니다.
+* 매개변수를 변경하는 행위
+* API를 호출한다든가 라우팅 전송을 하는 사이드 이펙트를 수행하는 행위
+* 논퓨어함수 호툴. 예를 들어 Date.now(), Math.random()
+
+간단히 설명하자면 입력된 매개변수를 어떠한 연산을 통해 결과를 반환하는 함수를 리듀서라고 생각하면 됩니다.
+
+
+```jsx
+import { VisibilityFilters } from './actions'
+ 
+const initialState = {
+  visibilityFilter: VisibilityFilters.SHOW_ALL,
+  todos: []
+}
+ 
+function todoApp(state, action) {
+  if (typeof state === 'undefined') {
+    return initialState
+  }
+ 
+  // For now, don't handle any actions
+  // and just return the state given to us.
+  return state
+}
+```
+Action에서 가져온 VisibilityFilters를 todoApp 리듀서를 이용해서 store에 emit하는 내용입니다.
+initial state로 변수를 만들어서 배정했는데요 쉽게 매개변수 선언부에 해도 됩니다.
+```jsx
+function todoApp(state = initialState, action) {
+  // For now, don't handle any actions
+  // and just return the state given to us.
+  return state
+}
+```
+이방법은 ES6방법입니다.
+그럼 받은 action을 처리해해보겠습니다.
+
+```jsx
+function todoApp(state = initialState, action) {
+  switch (action.type) {
+    case SET_VISIBILITY_FILTER:
+      return Object.assign({}, state, {
+        visibilityFilter: action.filter
+      })
+    default:
+      return state
+  }
+}
+```
+전달받은 action의 type이 SET_VISIBILITY_FILTE이면 동작하는 내용으로 작성되었습니다. 여기서 명심할 것은 다음과 같습니다.
+* state는 변경하면 안됩니다.
+Object.assign()을 써서 copy하여 생성하는 방식을 사용합니다. 즉 실제 값을 변경하거나 하지는 않습니다. 위 코드에서처럼 첫번쨰는 비어있는 파라미터 객체를 주어야합니다. 그이유는 첫번째 인자는 변경가능할 수 있기 때문입니다.
+Object.assign()은 ...(Object spread operator)로 대체할 수 있습니다.
+* 이전 state값을 default인 경우 반환합니다. 지정되지 않은 action에 대해서는 default처리하여 이전 state를 유지하는 것이 중요합니다.
+
+참고로 Object.assign()은 ES6입니다. 오래된 브라우저는 지원하지 않습니다. 이를 ES5로 바꿔서 동작시키기 위해서는 polyfill, Babel등이 필요합니다.
+
+원래는 switch는 실제 표준은 아니다. Flux 표준은 개념적인 부분으로 update를 전송하고 Store에 Dispatcher를 이용해서 등록하고, Store를 위해서는 객체여야한다. 그러나 Redux는 이러한 불편함을 퓨어 리듀서를 사용함으로써 해결했다.
+대부분의 프레임워크는 switch 상태를 사용합니다.
+
+## Handling More actions
+
+```jsx
+import {
+  ADD_TODO,
+  TOGGLE_TODO,
+  SET_VISIBILITY_FILTER,
+  VisibilityFilters
+} from './actions'
+ 
+...
+ 
+function todoApp(state = initialState, action) {
+  switch (action.type) {
+    case SET_VISIBILITY_FILTER:
+      return Object.assign({}, state, {
+        visibilityFilter: action.filter
+      })
+    case ADD_TODO:
+      return Object.assign({}, state, {
+        todos: [
+          ...state.todos,
+          {
+            text: action.text,
+            completed: false
+          }
+        ]
+      })
+    default:
+      return state
+  }
+}
+```
+...state.todos는 이전 todos이고 그 두 ㅣ{}객체는 새로 추가된 내용이다.
+즉 이전 애용을 복사해서 객체로 추가해 놓고 그 뒤 새로운 내용을 추가하여 새로운 객체를 만든다.
+
+TOGGLE_TODO 핸들러를 만들겠습니다.
+
+```jsx
+case TOGGLE_TODO:
+  return Object.assign({}, state, {
+    todos: state.todos.map((todo, index) => {
+      if (index === action.index) {
+        return Object.assign({}, todo, {
+          completed: !todo.completed
+        })
+      }
+      return todo
+    })
+  })
+```
+특정한 아이템을 업데이트하려고 하기 때문에 인덱스(index)를 제외한 동일한 아이템으로 새로운 배열을 만들어야합니다.
+
+## Splitting Reducers
+위 내용을 포함하여 하나의 함수로 보죠
+```jsx
+function todoApp(state = initialState, action) {
+  switch (action.type) {
+    case SET_VISIBILITY_FILTER:
+      return Object.assign({}, state, {
+        visibilityFilter: action.filter
+      })
+    case ADD_TODO:
+      return Object.assign({}, state, {
+        todos: [
+          ...state.todos,
+          {
+            text: action.text,
+            completed: false
+          }
+        ]
+      })
+    case TOGGLE_TODO:
+      return Object.assign({}, state, {
+        todos: state.todos.map((todo, index) => {
+          if (index === action.index) {
+            return Object.assign({}, todo, {
+              completed: !todo.completed
+            })
+          }
+          return todo
+        })
+      })
+    default:
+      return state
+  }
+}
+```
+꽤 장황합니다.
+저렇게 계속해서 길어지면 나중에 유지보수하기가 매우 어려워집니다.
+간결하게 만들기 위해서는 일단 비슷한 것 끼리 묶는 방법이 있습니다.
+위 코드에서는 todos와 visibilityFilter 두가지로 나눠질 수 있겠네요.
+그 둘은 각각 독립적으로 업데이트가 될 것이기 때문입니다.
+때때로 state필드가 서로 의존하고 더많은 고려사항이 필요하지만 위의 경우는 todos를 별도의 함수로 쉽게 분리할 수 있습니다.
+
+```jsx
+function todos(state = [], action) {
+  switch (action.type) {
+    case ADD_TODO:
+      return [
+        ...state,
+        {
+          text: action.text,
+          completed: false
+        }
+      ]
+    case TOGGLE_TODO:
+      return state.map((todo, index) => {
+        if (index === action.index) {
+          return Object.assign({}, todo, {
+            completed: !todo.completed
+          })
+        }
+        return todo
+      })
+    default:
+      return state
+  }
+}
+ 
+function todoApp(state = initialState, action) {
+  switch (action.type) {
+    case SET_VISIBILITY_FILTER:
+      return Object.assign({}, state, {
+        visibilityFilter: action.filter
+      })
+    case ADD_TODO:
+      return Object.assign({}, state, {
+        todos: todos(state.todos, action)
+      })
+    case TOGGLE_TODO:
+      return Object.assign({}, state, {
+        todos: todos(state.todos, action)
+      })
+    default:
+      return state
+  }
+}
+```
+todos 함수도 state를 받지만 이는 배열이라는 것을 명심해야합니다.
+이제 todoApp은 단순히 state의 조각을 관리르 위해 전달하고, todos는 그 조각을 어떻게 업데이트하는지를 알고 있습니다. 이것을 reducer composition이라고 합니다. 그리고 이것은 Reeux 앱을 만드는 기초적인 패턴 입니다.
+
+
+여기서 visibilityFilter도 분리시켜보겠습니다.
+
+```jsx
+function visibilityFilter(state = SHOW_ALL, action) {
+  switch (action.type) {
+    case SET_VISIBILITY_FILTER:
+      return action.filter
+    default:
+      return state
+  }
+}
+```
+일단 분리시켜서 함수로 작성했습니다.
+그리고 todoApp을 일부 수정하여 전체적으로 작성한 내용은 다음과 같습니다.
+```jsx
+function todos(state = [], action) {
+  switch (action.type) {
+    case ADD_TODO:
+      return [
+        ...state,
+        {
+          text: action.text,
+          completed: false
+        }
+      ]
+    case TOGGLE_TODO:
+      return state.map((todo, index) => {
+        if (index === action.index) {
+          return Object.assign({}, todo, {
+            completed: !todo.completed
+          })
+        }
+        return todo
+      })
+    default:
+      return state
+  }
+}
+ 
+function visibilityFilter(state = SHOW_ALL, action) {
+  switch (action.type) {
+    case SET_VISIBILITY_FILTER:
+      return action.filter
+    default:
+      return state
+  }
+}
+ 
+function todoApp(state = {}, action) {
+  return {
+    visibilityFilter: visibilityFilter(state.visibilityFilter, action),
+    todos: todos(state.todos, action)
+  }
+}
+```
+여기 리듀서들은 전역 state의 부분자체를 관리하고 있습니다. state 매개 변수는 모든 리듀서마다 다르며 관리하는 state의 일부에 해당합니다.
+
+이제 좀 가독성이 좋아진것 같습니다.
+그런데 저렇게 분리시켜둔 리듀서가 점차 많아지면 파일의 내용이 점차 커지게 되서 또 문제가 될 수 있습니다.(유지보수에 힘듬)
+
+쪼개둔 리듀서를 파일로 분리시켜서 관리하면 좀 더 편리하게 관리할 수 있습니다.
+
+그런데 말입니다. todoApp도 점차 내용이 커진다면 많아지겠죠? 함수가 인다를 여러개 받는다거나 하면 또 길어질 것이고요. 이럴땐 쉽게 리듀서를 합쳐주는 녀석이 있습니다. combineRedcuers()입니다.
+
+```jsx
+import { combineRedcuers } from 'redux'
+
+const todoApp = combineReducers({
+    visibilityFilter,
+    todos
+    })
+
+export default todoApp
+```
+
+이전 코드보다 간단해졌습니다.
+저렇게 하지 않으면 다음과 같이 코드를 만들어야합니다.
+```jsx
+export default function todoApp(state = {}, action) {
+  return {
+    visibilityFilter: visibilityFilter(state.visibilityFilter, action),
+    todos: todos(state.todos, action)
+  }
+}
+```
+딱봐도 이전 코드가 간단해보이죠?
+
+ES6 Savvy에서는 한번에 부르는 방법도 있습니다.
+```jsx
+import { combineRedcuers } from 'redux'
+import * as reducers from './reducers'
+
+const todoApp = combineRedcuers(reducers)
+```
+위와 같이 reducers에 있는 모든 리듀서를 reducers객체로 받아 전달하는 방법입니다.
+'import * '이 신규 신텍스이기 때문에 여기서는 다루지 않습니다.

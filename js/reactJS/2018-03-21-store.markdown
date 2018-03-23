@@ -1,0 +1,55 @@
+# Store
+지금까지 우리는 Action은 무엇을 했는지에 대한 사실을 대변한다고 했고, redcuer는 그러한 action에 따라서 state를 업데이트 한다고 했습니다.
+
+Store는 그 둘(Action, Reducer)을 가지는 객체입니다.
+store는 다음과 같은 책임들이 있습니다.
+* 애플리케이션 state 유지
+* getState()를 통해서 state에 접근 가능하다.
+* dispatch(ation)을 통해서 state를 업데이트하도록 해준다.
+* subscribe(listener)를 통해 리스터(listener)를 등록한다.
+* subscribe(listener)에 의해 반환된 함수를 통해서 리스너의 등록해제를 제어한다.
+
+리덕스 애플리케이션에서 오직 하나의 스토어를 가진다는 것은 매우 중요합니다. 데이터 핸들링 로직을 분리하고 싶은 경우, 많은 스토어들 대신에 리듀서 컴포지션(reducer composition)을 사용하면 됩니다.
+
+리듀서를 가지고 있다면 store를 만드는 건 쉽습니다.  이전 리듀서에서 combineRedcuers()로 여러 리듀서들을 하나로 합쳤습니다. store를 만들떄 그 함쳐진 리듀서를 이용해서 만들어 보겠습니다.
+
+```jsx
+import { createStore } from 'redux'
+import todoApp from './reducers'
+let store = createStore(todoApp)
+```
+createStore()의 두번째 매개변수는 선택적으로 초기 state를 지정할 수 있습니다.  이것은 서버에서 실행중인 리덕스(Redux) 애플리케이션의 state와 일치하도록 클라이언트의 state를 수화하는데 유용합니다.
+
+index.js에 다음과 같이 내용을 추가합니다.
+```jsx
+import {
+  addTodo,
+  toggleTodo,
+  setVisibilityFilter,
+  VisibilityFilters
+} from './actions/index'
+
+let store = createStore(todoApp)
+// Log the initial state
+console.log(store.getState())
+ 
+// Every time the state changes, log it
+// Note that subscribe() returns a function for unregistering the listener
+const unsubscribe = store.subscribe(() =>
+  console.log(store.getState())
+)
+ 
+// Dispatch some actions
+store.dispatch(addTodo('Learn about actions'))
+store.dispatch(addTodo('Learn about reducers'))
+store.dispatch(addTodo('Learn about store'))
+store.dispatch(toggleTodo(0))
+store.dispatch(toggleTodo(1))
+store.dispatch(setVisibilityFilter(VisibilityFilters.SHOW_COMPLETED))
+ 
+// Stop listening to state updates
+unsubscribe()
+// store테스트 종료
+```
+
+action경로에 맞게 설정하면됩니다. 저는 action폴더 안에 index.js파일에 작성했습니다.
