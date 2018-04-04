@@ -1,0 +1,53 @@
+## 리엑트에서 키를 원하는 값으로 넣는 방법
+다음과 같이 JS객체가 있습니다.
+```js
+var obj = {
+    'key' : 'value'
+}
+```
+여기서 key를 입력 받은 값이나 다른 변수의 값으로 키를 만들고 싶은 경우 다음과 같이 사용합니다.
+```js
+var key = 'test'
+var value = 'value'
+var obj = {
+    [key] : value
+}
+```
+위 내용은 obj객체가 키는 test이고 값은 value인 녀석으로 생성됩니다.
+이렇게 하면 키를 전달받은 인자로 만들 수 있습니다.
+
+# 유효성 검사
+데이터 유효성 검사를 위해서는
+"prop-types"라는 라이브러리가 필요합니다.
+예전에는 기본 탑재였지만 지금은 없기에 prop-types를 설치해주셔야합니다.
+npm install --save prop-types
+
+```js
+import PropTypes from 'prop-types'
+
+컴포넌트.proptypes = {
+    프로퍼티 : PropTypes.string.isRequired,
+    프로퍼티 : PropTypes.object.isRequired
+}
+컴포넌트.defaultProps = {
+    프로퍼티 : "",
+    프로퍼티 : null,
+}
+```
+위와 같이 사용.
+기본값은 propTypes으로 지정해둔 프로퍼티라면 지정한 타입에 맞게 설정해야합니다.
+프로퍼티 유효성 검사는 다음과 같은 양식으로 선언합니다.
+PropTypes.타입.필수여부
+필수가 아니라면 isRequired를 사용하지 않으면 됩니다.
+
+# ref 프로퍼티
+
+ref프로퍼티는 React가 직접적으로 조작하지 않는 DOM을 제어할 수 있게 해주는 녀석이다.
+ref 프로퍼티는 콬백함수로 매개인자를 DOM 인스턴스를 전달해서 컴포넌트에서 엘리먼트를 제어할 수 있게 할 수 있다.
+```js
+<div>
+    <Test ref={(i)=>{this.xxx = i}}/>
+</div>
+```
+위와 같이 사용하면됩니다.
+Test 컴포넌트에서 this.xxx.focus()처럼 method를 사용할 수 있습니다. focus()는 커서를 해당 인스턴스로 옯겨줍니다.

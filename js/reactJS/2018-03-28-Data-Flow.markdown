@@ -1,0 +1,64 @@
+---
+layout: post
+title: React-Data Flow
+---
+
+# Data FLow
+
+리덕스(redux)는 엄격한 단방향 데이터 흐름으로 동작합니다.
+
+애플리케이션 안에 있는 모든 데이터는 같은 라이프사이클 패턴을 따르므로 앱의 로직을 좀 더 예상 가능하고 이해하기 쉬워집니다. 또한 데이터 정규화를 권장하여 서로를 인식하지 못하는 동일한 데이터의 여러 독립적인 사본으로 끝나지 않도록 합니다.
+
+어떤 Redux 앱에서든 데이터 라이프사이클(data lifecycle)은 다음 4가지 단계를 따릅니다.
+1. store.dispatch(action) 호출
+Action은 무엇이 일어나는지를 설명한 객체입니다.
+예를 들자면
+```js
+{ type: 'LIKE_ARTICLE', articleId: 42 }
+{ type: 'FETCH_USER_SUCCESS', response: { id: 3, name: 'Mary' } }
+{ type: 'ADD_TODO', text: 'Read the Redux docs.' }
+```
+Action을 아주 같단한 뉴스를 미리보는 거라고 생각하세요. "난 기사 1번을 좋아한다." 또는 "나는 배고프다."같이
+App안에서 store.dispatch(action)을 어디서든지 호출할 수 있습니다. 컴포넌트나 XHR 콜백, 예정된 인터벌에서도 말이죠.
+
+2. 리덕스 스토어는 리듀서 함수를 호출합니다.
+store는 current state tree와 action 이 2개의 매개인자를 reducer에게 줄 것 입니다.
+
+3. root리듀서는 여러 리듀서들의 결과물(output)들을 하나의 state tree로 결합한다.
+root리듀서의 구조는 전적으로 당신(개발자)에게 있습니다.
+리덕스는 combineReducers() 핼퍼 함수와 함꼐 제공됩니다. 각각 state 트리의 하나의 분기(branch)를 관리하는 별도의 함수로 분할하는데 유용합니다.
+즉 쉽게 말하자면, 리듀서를 한파일로 다 만들자니 너무 클 수 있기에 나눠서 리듀서를 만들고 만든 것을 합쳐서 하나의 트리로 만들어서 제공하는 기능입니다. 유지보수에 편리하죠.
+```jsx
+ function todos(state = [], action) {
+   // Somehow calculate it...
+   return nextState
+ }
+ 
+ function visibleTodoFilter(state = 'SHOW_ALL', action) {
+   // Somehow calculate it...
+   return nextState
+ }
+ 
+ let todoApp = combineReducers({
+   todos,
+   visibleTodoFilter
+ })
+```
+위 코드를 보면 combineReducers()로 두개의 리듀서를 묶어서 제공하는 것을 볼 수 있습니다.
+
+```js
+let nextTodos = todos(state.todos, action)
+let nextVisibleTodoFilter = visibleTodoFilter(state.visibleTodoFilter, action)
+```
+다른 방법은 위와 같이 선언하고
+```js
+return {
+   todos: nextTodos,
+   visibleTodoFilter: nextVisibleTodoFilter
+ }
+```
+이렇게 묶어서 반환하는 방법입니다. 그러나 combineReducers()를 사용한다면 저렇게 할 필요 없이 쉽게 사용할 수 있습니다.
+
+4. 리덕스 store는 root리듀서가 반환한 완전한 state tree를 저장합니다.
+이 새 tree는 현재 앱의 next state입니다. store.subscribe(listener)와 함꼐 등록된 모든 리스너는 이제 적용되었습니다. 리스너들은 current state를 가져오기위해 store.getState()를 호출합니다.
+이제 UI는 새로운 state가 반영되여 변경되었을 것입니다. React Redux같은 것을 사용중이라면 이것은 component.setState(newState)가 호출되는 시점입니다.

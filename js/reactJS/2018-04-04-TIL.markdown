@@ -1,0 +1,71 @@
+# express cross-origin 문제 해결하기
+CORS때문에 웹에서 api호출이 힘든 경우가 있는데요
+해결방법은 2가지가 있습니다. 서버에서 허용해 주던가
+클라이언트에서 요청 헤더에 추가하던가 그러나 서버에서 허용해주지 않으면 제대로 동작하지 않는경우가 있습니다.
+
+express는 cors라는 미들웨어를 사용하면 편리하게 적용할 수 있습니다.
+```js
+var express = require('express');
+var cors = require('cors');
+var app = express();
+
+app.use(cors());
+
+app.get('/', function(req, res) {
+    return res.send()
+})
+
+app.listen(8080, function(){
+    console.log('now listening on port : 8080');
+})
+```
+위와 같이 아주 쉽게 구현할 수 있습니다.
+
+>CORS는 브라우저에서 허용되지 않은 주소로 요청을 보내지 못하게 하는 기능이므로 보안과 관련되어 있을 수 있습니다.
+
+# 리엑트 + Express
+리엑트는 SPA(Single Page Application)입니다. 그리고 서버와 통신을 주고 받기 위해서는 REST_API와 같은 API서버가 있어야 합니다.
+node는 여러 프레임워크가 있지만 그중 Express가 가장 범용적이고 대중적입니다.
+
+리엑트는 API를 호출하기 위해서 fetch와 axios, superagent등을 사용할 수 있습니다. fetch는 기본내장인데, 조금 불편해서 인지 보통 axios를 사용합니다. superagent는 일본에서 많이 사용하는 듯 합니다.(불확실)
+axios는 매우 쉽게 사용할 수 있습니다.
+```js
+axios.get(url).then(data=>{
+    console.log(data);//실제 데이터는 data.data 에 있음.
+    })
+```
+fetch나 axios는 promise 를 이용합니다. 그래서 then이 있죠.
+그러나 axios는 요청을 중간에 취소할 수 있지만 fetch는 못하는 것으로 보입니다.
+저렇게 하면 get 호출을 수행합니다.
+
+```js
+axios.get('/api/read/all').then(data=>{
+    console.log(data);
+
+})
+```
+jsx에서는 위와 같이 호출합니다. 주소가 따로 없습니다.
+그이유는 해당 프록시(proxy)를 사용하기 떄문입니다.
+사용을 위해서 package.json 파일을 열어서 proxy를 추가합니다.
+
+```json
+{
+    ...,
+    "proxy": "http://localhost:3001"
+}
+```
+위와 같이 추가합니다.
+만약 원하는 url이 있다면 그 url을 사용하면 됩니다.
+여기서 사용하는 프록시는 개발환경에서 사용하는 프록시환경입니다.
+그리고 express로 api서버 하나를 만들고 url은 프록시로 지정한 url을 사용합니다.
+그러면 정상적으로 호출하게 됩니다.
+
+
+
+##axios에서 한글 파라미터 사용하기
+```js
+axios.get('/api',{params:{name:name}},{charset:'utf-8'})
+.then(data=>{
+    console.log(data);
+})
+```        
