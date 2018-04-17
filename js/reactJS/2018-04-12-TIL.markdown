@@ -1,0 +1,135 @@
+# React Router
+
+## What is React Router
+
+응용프로그램(App)과 함께 선억적으로 작성되는 탐색 컴포넌트의 모음.
+
+이들은 자신들을 Dynamic Routing이라고 부릅니다. Static라우팅과는 꽤 다르기 때문입니다.
+
+### Static Routing?
+Express등을 사용해봤다면 거기서 사용한 방식은 대개 static 라우팅입니다. 그 프레임워크들은 사용자가 개발할 당시 미리 라우팅을 선언합니다.
+
+
+페이지 이동을 쉽게 해주는 기능.
+전체 페이지 또는 일부만 변경해주는데 그 기반은 url에 있다.
+
+### Dynamic Routing?
+설정이나 컨벤션이 아닌 앱이 렌더링될 때 라우팅이 이루어지는 것을 의미.
+
+## 기본 컴포넌트
+3가지 종류의 라우터 컴포넌트가 있습니다.
+* router components
+* route matching components
+* navigation compoents
+
+ ## React Router 라이브러리 종류가 많다?
+
+ React Router는 사용하는 곳에 따라서 라이브러리가 나눠집니다.
+ 그 이유는 React가 웹에서 사용되는 경우도 있지만 React Native처럼 스마트폰에서 돌아가는 경우고 있기 때문이죠. 그래서 사용하려는 환경에 맞게 web버전과 native버 등으로 설치해서 사용해야합니다.
+ web의 경우 react-router-dom을 사용하고
+ native의 경우, react-router-native를 사용합니다.
+
+그러나 일반적인 기능은 어떤 것을 사용하더라도 크게 차이는 없다고 합니다. 다만 특화된 기능들이 있어서 그부분을 사용해야하는 경우 나눠지는 거라고 보시면 될 것 같습니다.
+
+## Routers
+라우터 컴포넌트는 두가지로 나눠집니다.
+* < BrowserRouter >
+* < HashRouter >
+BrowserRounter는 서버에서 응답을 받을 경우 사용하고,
+HashRouter는 static 파일서버를 사용하는 경우에 사용합니다.
+
+## Route matching
+라우트 매칭(Route Matching) 컴포넌트는 두가지가 있습니다.
+* < Route >
+* < Switch >
+
+< Route >의 경로 prop과 현재 위치의 pathname을 비교해서 완료합니다.
+< Route >가 매치되는 컨텐츠를 랜더링하고 매치되지 않으면 랜더링하지 않습니다.  경로가 없는 < Route >는 항상 매치됩니다.
+< Switch > 컴포넌트는 < Route >의 그룹으로 사용됩니다.
+굳이 그룹화하기 위해 사용할 필요는 없습니다.
+안써도 무방합니다. 그러나 사용하면 꽤 유용합니다.
+
+< Switch >는 모든 자식 < Route > 엘리먼트를 반복하고 일치하는 첫 번째 요소만 렌더링합니다. 이건 도움이 됩니다. 여러 라우트들이 있고 그 라우트의 경로(path)가 동일할 경, 라우트 사이의 전환효과를 만들경우, 일치하는 경로가 없는 경우에 도움이 됩니다.
+> switch안에 라우트들을 순차적으로 검사하보고 일치하면 랜더링하고 끝내고 없으면 404와 같은것을 처리하고 하는 방식이 가능하다.즉, JS의 Switch구문처럼 사용할 수 있다는 의미.
+
+>스위치를 안쓰고는 어떻게 할까?
+switch가 아닌 방법은 exact를 지정해주면 됩니다. 즉 path의 값이 정확하게 일치해야 동작하도록 설정을 해주면 되는 방법입니다. 이떄는 default또는 not found같은 것도 지정을 해줘야합니다.
+
+
+## Route Rendring Props
+< Route >컴포넌트에는 3가지 props가 있습니다.
+* component
+* render
+* children
+각각은 따로 찾아봐야하겠지만 보통 component와 render만 사용합니다. 그 둘만 설명하도록 하겠습니다.
+
+coponent는 렌더링할 컴포넌트가 있을때 사용합니다.
+한줄짜리 함수를받는 render는 랜더링하기위한 컴포넌트에 여러 값들을 전달하기 위해서 사용합니다.
+component에서는 render처럼 한줄짜리 함수로 prop을 넘겨주면 안됩니다. 원하지 않는 언마운트, 리마운트 컴포넌트를 받을 수도 있기 때문입니다.
+
+```html
+<Switch>
+    <Route path='/' render={(props)=> <About {...props} extra={...}/> }/>
+    <Route path='/' component={About} />
+</Switch>
+```
+위와 같이 둘이 다르게 사용됩니다.
+
+그럼 경로가 맞으면 해당하는 컴포넌트를 랜더링한다는 것을 배웠습니다. 그런데 그 경로로는 어떻게 이동해야하는 걸까요???
+
+
+## Navigation
+### < Link >
+경로를 이동기 위해서는 < a >가 아닌 < Link > 컴포넌트를 사용합니다. 말 그대로 링크를 만들어 주는 컴포넌트입니다.
+
+```html
+<Link to='/'> Link </Link>
+```
+위와 같이 사용합니다. Link라는 링크가 만들어집니다.
+
+### < NavLink >
+< NavLink >는 이 < Link >의 특별판 같은 녀석입니다.
+역할은 동일하지만 추가적으로 해당 path가 일치하는 경우 active상태로 만들어줍니다.
+
+```html
+<NavLink to='/react' activeClassName='hurray'>React</NavLink>
+```
+위의 경우 /react 경로인 경우 React active상태가 됩니다.
+active가 된 상태일 경우 동작할 수 있도록 activeClassName이나 activeStyle로 스타일을 지정해서 활성화 된경우의 효과를 지정해줄 수 있습니다.
+
+### < Redirect >
+강제로 이동하기 위해서는 < Redirect >를 사용합니다.
+
+```html
+<Redirect to='/login' />
+```
+
+# JavaScript array.find()
+자바스크립트에서 find()라는 녀석이 갑자기 나왔다.
+알고보니 배열에서 필요한 녀석을 찾아내기 위해서 사용한다.
+React에서는 filter라는 녀석이 요런 역할을 했던거 같은데 조금 차이가 있었다.
+
+find()의 경우 조건에 만족하는 녀석 하나만 반환하게 된다.
+그리고 find()는 function을 받아서 처리한다.
+그래서
+```js
+//1~10층 까지 가는 엘레베이터
+var floors = [1,2,3,4,5,6,7,8,9,10]
+
+// 1층갈래
+function normalFloor(floors){
+    return floors <10;
+}
+// 10층은 고층용
+function HighFloor(floors){
+    return floors >=10;
+}
+
+console.log(floors.find(normalFloor))
+console.log(floors.find(HighFloor))
+```
+위 코드에서보면 find()는 normalFloor()함수를 받아서 처리한다.
+조건에는 10보다 작은 경우에 그 값을 반환해달라는 내용이다.
+배열은 순서대로 동작하므로 1은 조건을 만족하게 된다.
+그래서 log에는 1만 출력된다. 만족하는 조건이되면 그것만 반환하고 끝나기 때문.
+그러나 두번째 HighFloor()인 경우 10 이상인 값은 10뿐이므로 10이 반환됩니다.
